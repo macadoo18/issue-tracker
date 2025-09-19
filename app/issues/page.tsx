@@ -5,8 +5,10 @@ import React from 'react';
 const IssuesPage = () => {
   return (
     <>
-      <h1>Issues Page</h1>
-      <Link href='/issues/new'><Button>New Issues Page</Button></Link>
+      <Link href="/issues/new" className="absolute ml-2">
+        <Button>Create New Issue</Button>
+      </Link>
+      <h1 className="text-2xl text-center">Issues</h1>
     </>
   );
 };
