@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Callout, TextField, Text } from '@radix-ui/themes';
+import { Button, Callout, TextField } from '@radix-ui/themes';
 import { FaceIcon } from '@radix-ui/react-icons';
 import { useForm, Controller } from 'react-hook-form';
 import axios from 'axios';
@@ -11,21 +11,29 @@ import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createIssueSchema } from '@/app/validationSchemas';
 import { z } from 'zod';
+import ErrorMessage from '@/app/components/ErrorMessage';
+import Spinner from '@/app/components/Spinner';
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 
 const NewIssuesPage = () => {
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { register, control, handleSubmit, formState: { errors } } = useForm<IssueForm>({
-    resolver: zodResolver(createIssueSchema)
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IssueForm>({
+    resolver: zodResolver(createIssueSchema),
   });
 
   return (
     <div className="max-w-xl m-auto">
       {error && (
-        <Callout.Root color='red' className='mb-5'>
+        <Callout.Root color="red" className="mb-5">
           <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
       )}
@@ -34,19 +42,25 @@ const NewIssuesPage = () => {
         className="flex flex-col"
         onSubmit={handleSubmit(async (data) => {
           try {
+            setLoading(true);
             await axios.post('/api/issues', data);
             router.push('/issues');
           } catch (error) {
+            setLoading(false);
             setError('An unexpected error occurred');
           }
         })}
       >
-        <TextField.Root placeholder="Title" {...register('title')} className='mb-5'>
+        <TextField.Root
+          placeholder="Title"
+          {...register('title')}
+          className="mb-5"
+        >
           <TextField.Slot>
             <FaceIcon height="16" width="16" />
           </TextField.Slot>
         </TextField.Root>
-        { errors.title && <Text color='red' as='p'>{errors.title.message}</Text> }
+        <ErrorMessage>{errors.title?.message}</ErrorMessage>
 
         <Controller
           name="description"
@@ -55,10 +69,10 @@ const NewIssuesPage = () => {
             <SimpleMDE placeholder="Description of issue…" {...field} />
           )}
         />
-        { errors.description && <Text color='red' as='p'>{errors.description.message}</Text> }
+        <ErrorMessage>{errors.description?.message}</ErrorMessage>
 
         <span className="m-auto">
-          <Button>Submit</Button>
+          <Button disabled={loading}>Submit {loading && <Spinner />}</Button>
         </span>
       </form>
     </div>
